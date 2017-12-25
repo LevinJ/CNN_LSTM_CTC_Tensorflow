@@ -26,7 +26,7 @@ def split_train_val(X, y, train_size):
     y_train = y[train_indices]
 
     # split validation data
-    val_indices = [i for i in xrange(total_size) if i not in train_indices]
+    val_indices = [i for i in range(total_size) if i not in train_indices]
     X_val = X[val_indices]
     y_val = y[val_indices]
 
@@ -90,7 +90,7 @@ def load_data(file_to_read):
 
 
 def cp_file(imgs_list_para, labels_list_para, dst_para):
-    for i in xrange(imgs_list_para.shape[0]):
+    for i in range(imgs_list_para.shape[0]):
         file_path = imgs_list_para[i]
 
         filename = os.path.basename(file_path)
@@ -100,6 +100,7 @@ def cp_file(imgs_list_para, labels_list_para, dst_para):
         dest_filename = dst_para + fn + '_' + labels_list_para[i] + '.' +  ext
 
         shutil.copyfile(file_path, dest_filename)
+        print("from = {}, to = {}".format(file_path, dest_filename))
 
 
 if __name__ == '__main__':
