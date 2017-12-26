@@ -102,3 +102,7 @@ ENV/
 imgs/
 .project
 .pydevproject
+checkpoint/
+log/
+test.csv
+

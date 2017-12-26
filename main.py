@@ -96,7 +96,7 @@ def train(train_dir=None, val_dir=None, mode='train'):
                         acc_batch_total = 0
                         lastbatch_err = 0
                         lr = 0
-                        for j in xrange(num_batches_per_epoch_val):
+                        for j in range(num_batches_per_epoch_val):
                             indexs_val = [shuffle_idx_val[i % num_val_samples] for i in
                                           range(j * FLAGS.batch_size, (j + 1) * FLAGS.batch_size)]
                             val_inputs, val_seq_len, val_labels = \
@@ -105,7 +105,7 @@ def train(train_dir=None, val_dir=None, mode='train'):
                                         model.labels: val_labels,
                                         model.seq_len: val_seq_len}
 
-                            dense_decoded, lastbatch_err, lr = \
+                            dense_decoded, lr = \
                                 sess.run([model.dense_decoded, model.lrn_rate],
                                          val_feed)
 
