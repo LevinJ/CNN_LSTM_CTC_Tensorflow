@@ -93,16 +93,16 @@ class DataIterator:
             image_batch = self.image
             label_batch = self.labels
 
-        def get_input_lens(sequences):
-            # 64 is the output channels of the last layer of CNN
-            lengths = np.asarray([FLAGS.max_stepsize for _ in sequences], dtype=np.int64)
+#         def get_input_lens(sequences):
+#             # 64 is the output channels of the last layer of CNN
+#             lengths = np.asarray([FLAGS.max_stepsize for _ in sequences], dtype=np.int64)
+# 
+#             return sequences, lengths
 
-            return sequences, lengths
-
-        batch_inputs, batch_seq_len = get_input_lens(np.array(image_batch))
+#         batch_inputs, batch_seq_len = get_input_lens(np.array(image_batch))
         batch_labels = sparse_tuple_from_label(label_batch)
 
-        return batch_inputs, batch_seq_len, batch_labels
+        return image_batch, batch_labels
 
 
 def accuracy_calculation(original_seq, decoded_seq, ignore_value=-1, isPrint=False):

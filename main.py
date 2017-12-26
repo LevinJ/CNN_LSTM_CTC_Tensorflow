@@ -64,12 +64,11 @@ def train(train_dir=None, val_dir=None, mode='train'):
                     batch_time = time.time()
                     indexs = [shuffle_idx[i % num_train_samples] for i in
                               range(cur_batch * FLAGS.batch_size, (cur_batch + 1) * FLAGS.batch_size)]
-                    batch_inputs, batch_seq_len, batch_labels = \
+                    batch_inputs, batch_labels = \
                         train_feeder.input_index_generate_batch(indexs)
                     # batch_inputs,batch_seq_len,batch_labels=utils.gen_batch(FLAGS.batch_size)
                     feed = {model.inputs: batch_inputs,
-                            model.labels: batch_labels,
-                            model.seq_len: batch_seq_len}
+                            model.labels: batch_labels}
 
                     # if summary is needed
                     # batch_cost,step,train_summary,_ = sess.run([cost,global_step,merged_summay,optimizer],feed)
@@ -99,11 +98,10 @@ def train(train_dir=None, val_dir=None, mode='train'):
                         for j in range(num_batches_per_epoch_val):
                             indexs_val = [shuffle_idx_val[i % num_val_samples] for i in
                                           range(j * FLAGS.batch_size, (j + 1) * FLAGS.batch_size)]
-                            val_inputs, val_seq_len, val_labels = \
+                            val_inputs, val_labels = \
                                 val_feeder.input_index_generate_batch(indexs_val)
                             val_feed = {model.inputs: val_inputs,
-                                        model.labels: val_labels,
-                                        model.seq_len: val_seq_len}
+                                        model.labels: val_labels}
 
                             dense_decoded, lr = \
                                 sess.run([model.dense_decoded, model.lrn_rate],

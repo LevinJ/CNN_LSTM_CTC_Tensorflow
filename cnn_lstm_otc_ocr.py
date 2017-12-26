@@ -15,7 +15,6 @@ class LSTMOCR(object):
         # SparseTensor required by ctc_loss op
         self.labels = tf.sparse_placeholder(tf.int32)
         # 1d array of size [batch_size]
-        self.seq_len = tf.placeholder(tf.int32, [None])
         # l2
         self._extra_train_ops = []
 
@@ -56,11 +55,10 @@ class LSTMOCR(object):
 
         with tf.variable_scope('lstm'):
             # [batch_size, max_stepsize, num_features]
-            x = tf.reshape(x, [FLAGS.batch_size, -1, filters[3]])
-            x = tf.transpose(x, [0, 2, 1])  # batch_size * 64 * 48
-            # shp = x.get_shape().as_list()
-            # x.set_shape([FLAGS.batch_size, filters[3], shp[1]])
-            x.set_shape([FLAGS.batch_size, filters[3], 48])
+            batch_size, height, width, channels = x.get_shape().as_list()
+            x = tf.transpose(x, [0, 2, 1, 3]) 
+            x = tf.reshape(x, [-1, width, height * channels])
+            self.seq_len = tf.fill([tf.shape(x)[0]], width)
 
             # tf.nn.rnn_cell.RNNCell, tf.nn.rnn_cell.GRUCell
             cell = tf.contrib.rnn.LSTMCell(FLAGS.num_hidden, state_is_tuple=True)
@@ -95,6 +93,7 @@ class LSTMOCR(object):
             self.logits = tf.reshape(self.logits, [shape[0], -1, num_classes])
             # Time major
             self.logits = tf.transpose(self.logits, (1, 0, 2))
+
 
     def _build_train_op(self):
         self.global_step = tf.Variable(0, trainable=False)
