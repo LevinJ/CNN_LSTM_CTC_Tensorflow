@@ -1,0 +1,3 @@
+2017/12/26: 
+
+After fixing the time step direction to be the image width direction, the model get 0.999 accuracy at 12th epoch. so the model converge faster and has better validation accuracy.
