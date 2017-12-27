@@ -27,14 +27,11 @@ def train(train_dir=None, val_dir=None, mode='train'):
     print('get image: ', num_train_samples)
 
     print('loading validation data, please wait---------------------')
-    val_feeder = utils.DataIterator(data_dir=val_dir)
-    print('get image: ', val_feeder.size)
+    val_feeder, num_val_samples = data_prep.input_batch_generator('val', is_training=False, batch_size = FLAGS.batch_size * 2)
+    print('get image: ', num_val_samples)
 
    
     num_batches_per_epoch = int(math.ceil(num_train_samples / float(FLAGS.batch_size)))
-    num_val_samples = val_feeder.size
-    num_batches_per_epoch_val = int(num_val_samples / FLAGS.batch_size)  # example: 10000/100
-    shuffle_idx_val = np.random.permutation(num_val_samples)
 
     
 
@@ -52,7 +49,6 @@ def train(train_dir=None, val_dir=None, mode='train'):
 
         print('=============================begin training=============================')
         for cur_epoch in range(FLAGS.num_epochs):
-            train_cost = 0
             start_time = time.time()
             batch_time = time.time()
 
@@ -73,7 +69,6 @@ def train(train_dir=None, val_dir=None, mode='train'):
                     sess.run([model.merged_summay, model.cost, model.global_step,
                               model.train_op], feed)
                 # calculate the cost
-                train_cost += batch_cost * FLAGS.batch_size
 
                 train_writer.add_summary(summary_str, step)
 
@@ -88,39 +83,27 @@ def train(train_dir=None, val_dir=None, mode='train'):
                 # train_err += the_err * FLAGS.batch_size
                 # do validation
                 if step % FLAGS.validation_steps == 0:
-                    acc_batch_total = 0
-                    lastbatch_err = 0
-                    lr = 0
-                    for j in range(num_batches_per_epoch_val):
-                        indexs_val = [shuffle_idx_val[i % num_val_samples] for i in
-                                      range(j * FLAGS.batch_size, (j + 1) * FLAGS.batch_size)]
-                        val_inputs, val_labels = \
-                            val_feeder.input_index_generate_batch(indexs_val)
-                        val_feed = {model.inputs: val_inputs,
-                                    model.labels: val_labels}
+                    
+                    val_inputs, val_labels, ori_labels = next(val_feeder)    
+                    val_feed = {model.inputs: val_inputs,
+                                model.labels: val_labels}
 
-                        dense_decoded, lr = \
-                            sess.run([model.dense_decoded, model.lrn_rate],
-                                     val_feed)
+                    dense_decoded, lr = \
+                        sess.run([model.dense_decoded, model.lrn_rate],
+                                 val_feed)
 
-                        # print the decode result
-                        ori_labels = val_feeder.the_label(indexs_val)
-                        acc = utils.accuracy_calculation(ori_labels, dense_decoded,
-                                                         ignore_value=-1, isPrint=True)
-                        acc_batch_total += acc
-
-                    accuracy = (acc_batch_total * FLAGS.batch_size) / num_val_samples
-
-                    avg_train_cost = train_cost / ((cur_batch + 1) * FLAGS.batch_size)
+                    # print the decode result
+                    accuracy = utils.accuracy_calculation(ori_labels, dense_decoded,
+                                                     ignore_value=-1, isPrint=True)
 
                     # train_err /= num_train_samples
                     now = datetime.datetime.now()
                     log = "{}/{} {}:{}:{} Epoch {}/{}, " \
-                          "accuracy = {:.3f},avg_train_cost = {:.3f}, " \
-                          "lastbatch_err = {:.3f}, time = {:.3f},lr={:.8f}"
+                          "accuracy = {:.5f},train_cost = {:.5f}, " \
+                          ", time = {:.3f},lr={:.8f}"
                     print(log.format(now.month, now.day, now.hour, now.minute, now.second,
-                                     cur_epoch + 1, FLAGS.num_epochs, accuracy, avg_train_cost,
-                                     lastbatch_err, time.time() - start_time, lr))
+                                     cur_epoch + 1, FLAGS.num_epochs, accuracy, batch_cost,
+                                     time.time() - start_time, lr))
 
 
 def infer(img_path, mode='infer'):
