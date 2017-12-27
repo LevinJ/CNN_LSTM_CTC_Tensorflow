@@ -10,28 +10,28 @@ import tensorflow as tf
 import cnn_lstm_otc_ocr
 import utils
 import helper
-
+from preparedata import PrepareData
 FLAGS = utils.FLAGS
+import math
 
 logger = logging.getLogger('Traing for OCR using CNN+LSTM+CTC')
 logger.setLevel(logging.INFO)
 
-
+data_prep = PrepareData()
 def train(train_dir=None, val_dir=None, mode='train'):
     model = cnn_lstm_otc_ocr.LSTMOCR(mode)
     model.build_graph()
 
     print('loading train data, please wait---------------------')
-    train_feeder = utils.DataIterator(data_dir=train_dir)
-    print('get image: ', train_feeder.size)
+    train_feeder, num_train_samples = data_prep.input_batch_generator('train', is_training=True, batch_size = FLAGS.batch_size)
+    print('get image: ', num_train_samples)
 
     print('loading validation data, please wait---------------------')
     val_feeder = utils.DataIterator(data_dir=val_dir)
     print('get image: ', val_feeder.size)
 
-    num_train_samples = train_feeder.size  # 100000
-    num_batches_per_epoch = int(num_train_samples / FLAGS.batch_size)  # example: 100000/100
-
+   
+    num_batches_per_epoch = int(math.ceil(num_train_samples / float(FLAGS.batch_size)))
     num_val_samples = val_feeder.size
     num_batches_per_epoch_val = int(num_val_samples / FLAGS.batch_size)  # example: 10000/100
     shuffle_idx_val = np.random.permutation(num_val_samples)
@@ -52,7 +52,6 @@ def train(train_dir=None, val_dir=None, mode='train'):
 
             print('=============================begin training=============================')
             for cur_epoch in range(FLAGS.num_epochs):
-                shuffle_idx = np.random.permutation(num_train_samples)
                 train_cost = 0
                 start_time = time.time()
                 batch_time = time.time()
@@ -62,10 +61,7 @@ def train(train_dir=None, val_dir=None, mode='train'):
                     if (cur_batch + 1) % 100 == 0:
                         print('batch', cur_batch, ': time', time.time() - batch_time)
                     batch_time = time.time()
-                    indexs = [shuffle_idx[i % num_train_samples] for i in
-                              range(cur_batch * FLAGS.batch_size, (cur_batch + 1) * FLAGS.batch_size)]
-                    batch_inputs, batch_labels = \
-                        train_feeder.input_index_generate_batch(indexs)
+                    batch_inputs, batch_labels, _ = next(train_feeder)
                     # batch_inputs,batch_seq_len,batch_labels=utils.gen_batch(FLAGS.batch_size)
                     feed = {model.inputs: batch_inputs,
                             model.labels: batch_labels}
@@ -150,7 +146,7 @@ def infer(img_path, mode='infer'):
             print('cannot restore')
 
         decoded_expression = []
-        for curr_step in xrange(total_steps):
+        for curr_step in range(total_steps):
 
             imgs_input = []
             seq_len_input = []
