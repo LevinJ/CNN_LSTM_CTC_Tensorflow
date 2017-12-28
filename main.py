@@ -120,7 +120,7 @@ def train(train_dir=None, val_dir=None, mode='train'):
                         # train_err /= num_train_samples
                         now = datetime.datetime.now()
                         log = "{}/{} {}:{}:{} Epoch {}/{}, " \
-                              "accuracy = {:.3f},avg_train_cost = {:.3f}, " \
+                              "accuracy = {:.5f},avg_train_cost = {:.5f}, " \
                               "lastbatch_err = {:.3f}, time = {:.3f},lr={:.8f}"
                         print(log.format(now.month, now.day, now.hour, now.minute, now.second,
                                          cur_epoch + 1, FLAGS.num_epochs, accuracy, avg_train_cost,
