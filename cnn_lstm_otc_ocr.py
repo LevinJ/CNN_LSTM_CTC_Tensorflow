@@ -1,7 +1,8 @@
 import tensorflow as tf
 import utils
 from tensorflow.python.training import moving_averages
-
+import ocr_mtrics  
+from tensorflow.contrib import slim
 
 FLAGS = utils.FLAGS
 num_classes = utils.num_classes
@@ -21,8 +22,31 @@ class LSTMOCR(object):
     def build_graph(self):
         self._build_model()
         self._build_train_op()
-
+        self.__build_eval_node()
         self.merged_summay = tf.summary.merge_all()
+        return 
+    def __build_eval_node(self):
+        predictions = self.dense_decoded
+        labels = tf.sparse_tensor_to_dense(self.labels, default_value=-1)
+        if self.mode == 'train':
+            character_acc = ocr_mtrics.character_accuracy(predictions, labels)
+            word_acc = ocr_mtrics.word_accuracy(predictions, labels)
+            character_acc = tf.Print(character_acc, [character_acc], "character_accuracy")
+            tf.summary.scalar('train_character_accuracy', character_acc)
+            word_acc = tf.Print(word_acc, [word_acc], "word_acc")
+            tf.summary.scalar('train_word_acc', word_acc)
+            return
+        
+        names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
+            'eval/characteracc': ocr_mtrics.streaming_character_accuracy(predictions, labels),
+            'eval/wordacc': ocr_mtrics.streaming_word_accuracy(predictions, labels)
+        })
+        for metric, value in names_to_values.items():
+            value = tf.Print(value, [value], metric)
+            tf.summary.scalar(metric, value)
+        self.names_to_updates = list(names_to_updates.values())
+                
+        return
 
     def _build_model(self):
         filters = [64, 128, 128, FLAGS.max_stepsize]
