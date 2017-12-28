@@ -74,7 +74,7 @@ class EvaluateModel(PrepareData):
                 dense_decoded= sess.run(model.dense_decoded,val_feed)
                 elapsed = time.time()
                 elapsed = elapsed - start
-                print('{}/{}, {:.4f} seconds.'.format(i, num_batches_per_epoch, elapsed))
+                print('{}/{}, {:.5f} seconds.'.format(i, num_batches_per_epoch, elapsed))
                     
                 # print the decode result
                 
@@ -83,7 +83,7 @@ class EvaluateModel(PrepareData):
                 acc_batch_total += acc * len(ori_labels)
     
             accuracy = acc_batch_total/ num_samples
-            print("eval acc={}".format(accuracy))
+            print("eval acc={:.6f}".format(accuracy))
             return
     def run(self):
         self.parse_param()
