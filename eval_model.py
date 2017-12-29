@@ -49,9 +49,10 @@ class EvaluateModel(PrepareData):
     
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
     
             saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-    #         train_writer = tf.summary.FileWriter(FLAGS.log_dir + '/eval', sess.graph)
+            eval_writer = tf.summary.FileWriter(FLAGS.log_dir + '/eval', sess.graph)
             
             
             if tf.gfile.IsDirectory(self.checkpoint_path):
@@ -65,25 +66,21 @@ class EvaluateModel(PrepareData):
     
 
             
-            acc_batch_total = 0
+
             for i in range(num_batches_per_epoch):
-                val_inputs, val_labels, ori_labels = next(val_feeder)
-                val_feed = {model.inputs: val_inputs,
-                            model.labels: val_labels}
+                inputs, labels, _ = next(val_feeder)
+                feed = {model.inputs: inputs,
+                            model.labels: labels}
                 start = time.time()
-                dense_decoded= sess.run(model.dense_decoded,val_feed)
+                _ = sess.run(model.names_to_updates, feed)
                 elapsed = time.time()
                 elapsed = elapsed - start
                 print('{}/{}, {:.5f} seconds.'.format(i, num_batches_per_epoch, elapsed))
                     
                 # print the decode result
                 
-                acc = utils.accuracy_calculation(ori_labels, dense_decoded,
-                                                 ignore_value=-1, isPrint=True)
-                acc_batch_total += acc * len(ori_labels)
-    
-            accuracy = acc_batch_total/ num_samples
-            print("eval acc={:.6f}".format(accuracy))
+            summary_str, step = sess.run([model.merged_summay, model.global_step])
+            eval_writer.add_summary(summary_str, step)
             return
     def run(self):
         self.parse_param()

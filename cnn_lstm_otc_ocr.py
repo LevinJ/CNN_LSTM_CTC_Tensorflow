@@ -35,6 +35,7 @@ class LSTMOCR(object):
             tf.summary.scalar('train_character_accuracy', character_acc)
             word_acc = tf.Print(word_acc, [word_acc], "word_acc")
             tf.summary.scalar('train_word_acc', word_acc)
+            tf.summary.scalar('loss', self.cost)
             return
         
         names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
@@ -126,7 +127,7 @@ class LSTMOCR(object):
                                    inputs=self.logits,
                                    sequence_length=self.seq_len)
         self.cost = tf.reduce_mean(self.loss)
-        tf.summary.scalar('cost', self.cost)
+        
 
         self.lrn_rate = tf.train.exponential_decay(FLAGS.initial_learning_rate,
                                                    self.global_step,
