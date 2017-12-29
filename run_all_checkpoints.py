@@ -20,7 +20,7 @@ class RunAllCheckpoints(object):
         content = [x.strip() for x in content] 
         checkpoints = []
         for line in content:
-            m = re.search('all_model_checkpoint_paths: (.*)model.ckpt-(.*)"', line)
+            m = re.search('all_model_checkpoint_paths:(.*)ocr-model-(.*)"', line)
             if m:
                 num = m.group(2)
                 checkpoints.append(num)
@@ -64,7 +64,7 @@ class RunAllCheckpoints(object):
         for checkpoint in sel_checkpoints:
             for split_name in ["train", "eval"]:
                 
-                checkpoint_file ="{}/{}/model.ckpt-{}".format(g_modellogdir,  self.checkpoint_path, checkpoint)
+                checkpoint_file ="{}/{}/ocr-model-{}".format(g_modellogdir,  self.checkpoint_path, checkpoint)
 #                 print("checkpoint {}, {} data".format(checkpoint_file, split_name))
                 
                 cmd_str = "python ./eval_model.py "

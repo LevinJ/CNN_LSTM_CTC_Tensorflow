@@ -16,14 +16,14 @@ import math
 import argparse
 
 
-
+log_dir = './log/evals'
 class EvaluateModel(PrepareData):
     def __init__(self):
         PrepareData.__init__(self)
         return
     def parse_param(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-s', '--split_name',  help='which split of dataset to use',  default="val")
+        parser.add_argument('-s', '--split_name',  help='which split of dataset to use',  default="eval")
         parser.add_argument('-c', '--checkpoint_path',  help='which checkpoint to use',  default= "./checkpoint/")
         args = parser.parse_args()
         
@@ -35,11 +35,7 @@ class EvaluateModel(PrepareData):
     def eval_model(self):
         model = cnn_lstm_otc_ocr.LSTMOCR('eval')
         model.build_graph()
-    
-        print('loading validation data, please wait---------------------')
         val_feeder, num_samples = self.input_batch_generator(self.split_name, is_training=False, batch_size = FLAGS.batch_size)
-        print('get image: ', num_samples)
-    
        
         num_batches_per_epoch = int(math.ceil(num_samples / float(FLAGS.batch_size)))
        
@@ -52,14 +48,14 @@ class EvaluateModel(PrepareData):
             sess.run(tf.local_variables_initializer())
     
             saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-            eval_writer = tf.summary.FileWriter(FLAGS.log_dir + '/eval', sess.graph)
+            eval_writer = tf.summary.FileWriter("{}/{}".format(log_dir, self.split_name), sess.graph)
             
             
             if tf.gfile.IsDirectory(self.checkpoint_path):
                 checkpoint_file = tf.train.latest_checkpoint(self.checkpoint_path)
             else:
                 checkpoint_file = self.checkpoint_path
-            print('Evaluating checkpoint_path={}, split={}'.format(checkpoint_file, self.split_name))
+            print('Evaluating checkpoint_path={}, split={}, num_samples={}'.format(checkpoint_file, self.split_name, num_samples))
            
             saver.restore(sess, checkpoint_file)
            
@@ -75,7 +71,7 @@ class EvaluateModel(PrepareData):
                 _ = sess.run(model.names_to_updates, feed)
                 elapsed = time.time()
                 elapsed = elapsed - start
-                print('{}/{}, {:.5f} seconds.'.format(i, num_batches_per_epoch, elapsed))
+#                 print('{}/{}, {:.5f} seconds.'.format(i, num_batches_per_epoch, elapsed))
                     
                 # print the decode result
                 
