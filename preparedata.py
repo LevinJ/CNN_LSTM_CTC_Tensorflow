@@ -59,7 +59,7 @@ class PrepareData(OCRDatasets):
     def __generator(self, samples, batch_size):
         num_samples = len(samples)
         while 1: # Loop forever so the generator never terminates
-            shuffle(samples)
+            samples = shuffle(samples)
             for offset in range(0, num_samples, batch_size):
                 batch_samples = samples[offset:offset+batch_size]
                 yield self.__preprocess_samples(batch_samples)
