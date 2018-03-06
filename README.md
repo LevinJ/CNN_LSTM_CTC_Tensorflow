@@ -17,10 +17,10 @@ This project is based on the great work from [here](https://github.com/watsonyan
 
 Below improvements are made:
 1. correct the time step direction  
-Previously the time step direction is channle, which is incorrect. Now it has been corrected to the width direction. see [here](https://github.com/watsonyanghx/CNN_LSTM_CTC_Tensorflow/issues/8) for more discussion on this issue.
-2. optimize trainig scripts  
+Previously the time step direction is channel, which is incorrect. Now it has been corrected to the width direction. see [here](https://github.com/watsonyanghx/CNN_LSTM_CTC_Tensorflow/issues/8) for more discussion on this issue.
+2. optimize training scripts  
 Previously all training images are loaded into memroy, now a simple image generator is used to generate training batch.
-3. metrics implemetation
+3. metrics implementation
 implement the character and word accuracy in tensorflow.
 
 ## Dataset
