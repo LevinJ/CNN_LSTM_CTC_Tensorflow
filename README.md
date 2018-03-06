@@ -1,5 +1,7 @@
 # CNN_LSTM_CTC_Tensorflow
 
+The images are first processed by a CNN to extract features, then these extracted features are fed into a LSTM for character recognition.
+
 CNN+LSTM+CTC based OCR(Optical Character Recognition) implemented using tensorflow. 
 
 
